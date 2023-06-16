@@ -13,7 +13,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://todo-mongo.vercel.app/login",
+      "https://todo-mongo.vercel.app/",
       "http://localhost:3000",
       "localhost:1234/login",
     ],
