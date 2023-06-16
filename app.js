@@ -10,7 +10,15 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://todo-mongo.vercel.app/login",
+      "http://localhost:3000",
+      "localhost:1234/login",
+    ],
+  })
+);
 
 app.use(express.urlencoded({ extended: true }));
 
