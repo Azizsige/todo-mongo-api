@@ -12,11 +12,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      "https://todo-mongo.vercel.app/",
-      "http://localhost:3000",
-      "localhost:1234/login",
-    ],
+    origin: ["https://todo-mongo.vercel.app/dashboard", "https://domain2.com"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
