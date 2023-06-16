@@ -5,7 +5,7 @@ const todoSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: false,
     },
     description: {
       type: String,
