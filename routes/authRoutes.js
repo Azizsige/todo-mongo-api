@@ -10,7 +10,17 @@ router.post(
   "/register",
   [
     // Validasi field harus diisi
-    body("username").notEmpty().withMessage("Username harus diisi"),
+    body("username").custom((value, { req }) => {
+      //  check if input using space or not
+      if (!value) {
+        throw new Error("Username harus diisi");
+      } else if (value.match(/\s/g)) {
+        throw new Error("Username tidak boleh menggunakan spasi");
+      } else if (value.length < 6) {
+        // cek jika panjang username kurang dari 6 karakter
+        throw new Error("Username minimal 6 karakter");
+      }
+    }),
     body("email").custom((value, { req }) => {
       if (!value) {
         throw new Error("Email harus diisi");
