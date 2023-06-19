@@ -16,9 +16,6 @@ router.post(
         throw new Error("Username harus diisi");
       } else if (value.match(/\s/g)) {
         throw new Error("Username tidak boleh menggunakan spasi");
-      } else if (value.length < 6) {
-        // cek jika panjang username kurang dari 6 karakter
-        throw new Error("Username minimal 6 karakter");
       }
       return true;
     }),
