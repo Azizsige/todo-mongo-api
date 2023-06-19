@@ -67,23 +67,26 @@ const login = async (req, res) => {
       return res.status(400).json({ errors: extractedErrors });
     }
 
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+    });
     if (!user) {
-      return res
-        .status(401)
-        .json({ status: "false", message: "Email belum terdaftart" });
-    }
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
       return res
         .status(401)
         .json({
           status: "false",
-          message: "Password yang anda masukkan salah",
+          message: "Username atau Email belum terdaftar",
         });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({
+        status: "false",
+        message: "Password yang anda masukkan salah",
+      });
     }
 
     // Generate access token

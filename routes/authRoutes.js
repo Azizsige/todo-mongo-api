@@ -20,11 +20,16 @@ router.post(
         // cek jika panjang username kurang dari 6 karakter
         throw new Error("Username minimal 6 karakter");
       }
+      return true;
     }),
     body("email").custom((value, { req }) => {
+      //  check email harus pakai @
       if (!value) {
-        throw new Error("Email harus diisi");
-      } else if (!value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        throw new Error("Email harus diisi huhuh");
+      }
+
+      // check email harus @gmail atau @yahoo
+      if (!value.match(/^[^\s@]+@(gmail|yahoo)\.com$/)) {
         throw new Error("Email tidak valid");
       }
       return true;
@@ -54,13 +59,24 @@ router.post(
   "/login",
   [
     // Validasi field harus diisi
-    body("email").custom((value, { req }) => {
+    body("identifier").custom(async (value, { req }) => {
+      //  check if input using space or not
       if (!value) {
-        throw new Error("Email harus diisi");
-      } else if (!value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        throw new Error("Email tidak valid");
+        throw new Error("Username atau email harus diisi");
+      } else {
+        if (value.match(/\s/g)) {
+          throw new Error("Username tidak boleh menggunakan spasi");
+        } else {
+          // Check if input is an email address
+          if (value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            // Perform email validation
+            if (!value.match(/^[^\s@]+@(gmail|yahoo)\.com$/)) {
+              throw new Error("Email tidak valid");
+            }
+          }
+          return true;
+        }
       }
-      return true;
     }),
     body("password").custom((value, { req }) => {
       // cek jika password kosong
