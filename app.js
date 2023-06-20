@@ -6,18 +6,22 @@ const authRoutes = require("./routes/authRoutes");
 const todoRoutes = require("./routes/todoRoutes");
 const userRoutes = require("./routes/userRoutes");
 
+const cookieParser = require("cookie-parser");
+
 const cors = require("cors");
 
 const app = express();
 
 app.use(
   cors({
-    origin: ["https://todo-mongo.vercel.app"],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    // origin: ["https://todo-mongo.vercel.app"],
+    // credentials: true,
+    // methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    // allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
 
