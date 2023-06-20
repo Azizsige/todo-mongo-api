@@ -73,12 +73,10 @@ const login = async (req, res) => {
       $or: [{ username: identifier }, { email: identifier }],
     });
     if (!user) {
-      return res
-        .status(401)
-        .json({
-          status: "false",
-          message: "Username atau Email belum terdaftar",
-        });
+      return res.status(401).json({
+        status: "false",
+        message: "Username atau Email belum terdaftar",
+      });
     }
 
     const match = await bcrypt.compare(password, user.password);
@@ -102,6 +100,12 @@ const login = async (req, res) => {
     // Simpan refresh token ke dalam user
     user.refreshToken = refreshToken;
     await user.save();
+
+    // Set refresh token as HTTP-only cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true, // Set this to true if using HTTPS
+    });
 
     res.status(200).json({
       status: "true",
