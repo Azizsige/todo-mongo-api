@@ -34,7 +34,10 @@ app.use("/api/users", userRoutes);
 
 // Atau konfigurasi CORS dengan set header "Access-Control-Allow-Origin" secara manual
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*"); // Ganti "*" dengan domain Anda jika ingin membatasi origin
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://todo-mongo.vercel.app/"
+  ); // Ganti "*" dengan domain Anda jika ingin membatasi origin
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
