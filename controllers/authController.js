@@ -107,6 +107,8 @@ const login = async (req, res) => {
       secure: true, // Set this to true if using HTTPS
     });
 
+    // res.set("Set-Cookie", refreshToken);
+
     res.status(200).json({
       status: "true",
       message: "Berhasil Login",
@@ -126,23 +128,26 @@ const login = async (req, res) => {
 // haput token user yang sedang login dari database
 const logout = async (req, res) => {
   try {
-    const token = req.headers["authorization"].split(" ")[1];
+    const accessToken = req.headers["authorization"].split(" ")[1];
+    const refreshToken = req.cookies.refreshToken;
 
-    // Add token to blacklist
-    const blacklistedToken = new TokenBlacklist({ token });
-    await blacklistedToken.save();
+    // Add access token to blacklist
+    const accessTokenBlacklist = new TokenBlacklist({ token: accessToken });
+    await accessTokenBlacklist.save();
+
+    // Add refresh token to blacklist
+    const refreshTokenBlacklist = new TokenBlacklist({ token: refreshToken });
+    await refreshTokenBlacklist.save();
 
     // Remove refresh token from user
     const user = await User.findById(req.user.userId);
     user.refreshToken = null;
     await user.save();
 
-    res
-      .status(200)
-      .json({ status: "true", message: "Successfully logged out" });
+    res.status(200).json({ message: "Successfully logged out" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ status: "false", message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
