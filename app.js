@@ -21,6 +21,9 @@ const app = express();
 //   })
 // );
 
+// Menggunakan middleware CORS
+app.use(cors());
+
 app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
@@ -28,6 +31,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/todos", todoRoutes);
 app.use("/api/users", userRoutes);
+
+// Atau konfigurasi CORS dengan set header "Access-Control-Allow-Origin" secara manual
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // Ganti "*" dengan domain Anda jika ingin membatasi origin
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  next();
+});
 
 mongoose
   .connect(config.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
