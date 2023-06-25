@@ -25,10 +25,27 @@ const authenticateToken = async (req, res, next) => {
     next();
   } catch (error) {
     console.error(error);
-    return res.status(403).json({ message: "Invalid token" });
+    return res
+      .status(403)
+      .json({ status: "false", message: "Invalid token or token expired" });
   }
+};
+
+// generate refresh token
+const generateRefreshToken = (user) => {
+  return jwt.sign({ userId: user._id }, config.JWT_SECRET, {
+    expiresIn: "2min",
+  });
+};
+
+const generateAccessToken = (user) => {
+  return jwt.sign({ userId: user._id }, config.JWT_SECRET, {
+    expiresIn: "1min",
+  });
 };
 
 module.exports = {
   authenticateToken,
+  generateAccessToken,
+  generateRefreshToken,
 };

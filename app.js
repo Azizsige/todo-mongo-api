@@ -24,8 +24,6 @@ const app = express();
 // Menggunakan middleware CORS
 app.use(cors());
 
-app.use(cookieParser());
-
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
