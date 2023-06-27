@@ -34,13 +34,13 @@ const authenticateToken = async (req, res, next) => {
 // generate refresh token
 const generateRefreshToken = (user) => {
   return jwt.sign({ userId: user._id }, config.JWT_SECRET, {
-    expiresIn: "30min",
+    expiresIn: "10min",
   });
 };
 
 const generateAccessToken = (user) => {
   return jwt.sign({ userId: user._id }, config.JWT_SECRET, {
-    expiresIn: "15min",
+    expiresIn: "2min",
   });
 };
 
