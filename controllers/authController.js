@@ -127,26 +127,35 @@ const login = async (req, res) => {
 // haput token user yang sedang login dari database
 const logout = async (req, res) => {
   try {
-    const accessToken = req.headers["authorization"].split(" ")[1];
-    const refreshToken = req.cookies.refreshToken;
+    const accessToken = req.headers["Authorization"].split(" ")[1];
+    const userId = req.body.userId;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const user = await User.findById(userId);
 
     // Add access token to blacklist
     const accessTokenBlacklist = new TokenBlacklist({ token: accessToken });
     await accessTokenBlacklist.save();
 
     // Add refresh token to blacklist
-    const refreshTokenBlacklist = new TokenBlacklist({ token: refreshToken });
+    const refreshTokenBlacklist = new TokenBlacklist({
+      token: user.refreshToken,
+    });
     await refreshTokenBlacklist.save();
 
     // Remove refresh token from user
-    const user = await User.findById(req.user.userId);
     user.refreshToken = null;
     await user.save();
 
-    res.status(200).json({ message: "Successfully logged out" });
+    res
+      .status(200)
+      .json({ status: "true", message: "Successfully logged out" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ status: "true", message: "Internal Server Error" });
   }
 };
 

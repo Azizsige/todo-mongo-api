@@ -8,7 +8,9 @@ const authenticateToken = async (req, res, next) => {
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "No token provided" });
+    return res
+      .status(401)
+      .json({ status: "false", message: "No token provided" });
   }
 
   try {
@@ -17,7 +19,9 @@ const authenticateToken = async (req, res, next) => {
     // Check if token is blacklisted
     const isBlacklisted = await TokenBlacklist.findOne({ token });
     if (isBlacklisted) {
-      return res.status(401).json({ message: "Token is blacklisted" });
+      return res
+        .status(401)
+        .json({ status: "false", message: "Token is blacklisted" });
     }
 
     // Set user to request object
@@ -34,13 +38,13 @@ const authenticateToken = async (req, res, next) => {
 // generate refresh token
 const generateRefreshToken = (user) => {
   return jwt.sign({ userId: user._id }, config.JWT_SECRET, {
-    expiresIn: "5min",
+    expiresIn: "2d",
   });
 };
 
 const generateAccessToken = (user) => {
   return jwt.sign({ userId: user._id }, config.JWT_SECRET, {
-    expiresIn: "1min",
+    expiresIn: "15min",
   });
 };
 
