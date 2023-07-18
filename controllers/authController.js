@@ -127,11 +127,15 @@ const login = async (req, res) => {
 // haput token user yang sedang login dari database
 const logout = async (req, res) => {
   try {
-    const accessToken = req.headers["Authorization"].split(" ")[1];
+    const accessToken = req.body.accessToken;
     const userId = req.body.userId;
 
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
+    }
+
+    if (!accessToken) {
+      return res.status(400).json({ message: "Access Token is required" });
     }
 
     const user = await User.findById(userId);
