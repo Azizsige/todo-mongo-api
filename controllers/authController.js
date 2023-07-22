@@ -9,6 +9,9 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../middleware/authMiddleware");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const PasswordResetToken = require("../models/passwordResetTokenSchema ");
 
 const register = async (req, res) => {
   try {
@@ -100,14 +103,6 @@ const login = async (req, res) => {
     // Simpan refresh token ke dalam user
     user.refreshToken = refreshToken;
     await user.save();
-
-    // Set refresh token as HTTP-only cookie
-    // res.cookie("refreshToken", accessToken, {
-    //   httpOnly: true,
-    //   secure: true, // Set this to true if using HTTPS
-    // });
-
-    // res.set("Set-Cookie", refreshToken);
 
     res.status(200).json({
       status: "true",
@@ -205,21 +200,128 @@ const refreshToken = async (req, res) => {
       .json({ status: "false", message: "Session sudah berakhir" });
   }
 };
-// dapat semua data user yang ada di database
-const getAllUser = async (req, res) => {
+
+const forgotPassword = async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json({ status: "true", users });
+    const { email } = req.body;
+
+    // Cari user berdasarkan email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Buat token reset password
+    const token = crypto.randomBytes(20).toString("hex");
+    const passwordResetToken = new PasswordResetToken({
+      user: user._id,
+      token,
+    });
+    await passwordResetToken.save();
+
+    // Kirim email dengan tautan reset password
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: config.EMAIL_ADDRESS,
+        pass: config.EMAIL_PASSWORD,
+      },
+    });
+
+    const resetLink = `http://localhost:1234/reset-password/${token}`; // Ganti your-app-url dengan URL aplikasi Anda
+    const mailOptions = {
+      from: config.EMAIL_ADDRESS,
+      to: user.email,
+      subject: "Reset Password",
+      subject: "Reset Password",
+      html: `
+      <div style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
+          <h2 style="color: #333;">Halo ${user.username},</h2>
+          <p style="color: #666;">Kami menerima permintaan untuk mereset password akun Anda.</p>
+          <p style="color: #666;">Klik tautan di bawah ini untuk mereset password:</p>
+          <a href="${resetLink}" style="color: #007bff; text-decoration: none;">Reset Password</a>
+          <p style="color: #666;">Jika Anda tidak melakukan permintaan ini, abaikan email ini.</p>
+          <p style="color: #666;">Terima kasih,</p>
+          <p style="color: #666;">Tim Support</p>
+          
+          <!-- Footer -->
+          <div style="margin-top: 20px;">
+            <img src="https://your-website.com/footer-image.png" alt="Footer Image" style="display: block; max-width: 100%; height: auto;">
+            <p style="color: #666; text-align: center;">&copy; 2023 Your Company. All rights reserved.</p>
+          </div>
+          <!-- End of Footer -->
+        </div>
+    `,
+      //   html: `
+      //   <div style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
+      //       <img src="" style="width: 100%; max-height: 150px; margin-bottom: 20px;">
+      //       <h2 style="color: #333;">Halo ${user.username},</h2>
+      //       <p style="color: #666;">Kami menerima permintaan untuk mereset password akun Anda.</p>
+      //       <p style="color: #666;">Klik tautan di bawah ini untuk mereset password:</p>
+      //       <a href="${resetLink}" style="color: #007bff; text-decoration: none;">Reset Password</a>
+      //       <p style="color: #666;">Jika Anda tidak melakukan permintaan ini, abaikan email ini.</p>
+      //       <p style="color: #666;">Terima kasih,</p>
+      //       <p style="color: #666;">Tim Support</p>
+      //       <img src="" style="width: 100%; max-height: 100px; margin-top: 20px;">
+      //     </div>
+      // `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Failed to send email" });
+      }
+
+      res.status(200).json({
+        status: "true",
+        message: "Link sudah dikirim ",
+      });
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: "false", message: "Internal Server Error" });
   }
 };
 
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    // Cari token reset password
+    const passwordResetToken = await PasswordResetToken.findOne({ token });
+    if (!passwordResetToken) {
+      return res.status(404).json({ message: "Token not found" });
+    }
+
+    // Cari user berdasarkan token reset password
+    const user = await User.findById(passwordResetToken.user);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Atur password baru untuk user
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    // Hapus token reset password dari database
+    await passwordResetToken.remove();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+// dapat semua data user yang ada di database
+
 module.exports = {
   register,
   login,
-  getAllUser,
   logout,
   refreshToken,
+  forgotPassword,
+  resetPassword,
 };
