@@ -211,8 +211,8 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Buat token reset password
-    const token = crypto.randomBytes(20).toString("hex");
+    // Buat token reset password dari jwt
+    const token = generateAccessToken(user._id);
     const passwordResetToken = new PasswordResetToken({
       user: user._id,
       token,
