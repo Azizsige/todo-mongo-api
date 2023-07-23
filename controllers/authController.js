@@ -211,6 +211,10 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!email) {
+      return res.status(404).json({ message: "Email harus diisi" });
+    }
+
     // Buat token reset password
     const token = crypto.randomBytes(20).toString("hex");
     const passwordResetToken = new PasswordResetToken({
