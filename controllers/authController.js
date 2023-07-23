@@ -205,14 +205,20 @@ const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // dapatkan data msg dari array errors
+      const extractedErrors = [];
+      errors.array().map((err) => extractedErrors.push({ msg: err.msg }));
+
+      return res.status(400).json({ errors: extractedErrors });
+    }
+
     // Cari user berdasarkan email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
-    }
-
-    if (!email) {
-      return res.status(404).json({ message: "Email harus diisi" });
     }
 
     // Buat token reset password

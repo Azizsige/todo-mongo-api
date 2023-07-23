@@ -90,7 +90,26 @@ router.post(
 );
 router.post("/logout", authController.logout);
 router.post("/refresh-token", authController.refreshToken);
-router.post("/forgot-password", authController.forgotPassword);
+router.post(
+  "/forgot-password",
+  [
+    // Validasi field harus diisi
+
+    body("email").custom((value, { req }) => {
+      //  check email harus pakai @
+      if (!value) {
+        throw new Error("Email harus diisi huhuh");
+      }
+
+      // check email harus @gmail atau @yahoo
+      if (!value.match(/^[^\s@]+@(gmail|yahoo)\.com$/)) {
+        throw new Error("Email tidak valid");
+      }
+      return true;
+    }),
+  ],
+  authController.forgotPassword
+);
 router.get("/verify-token/:token", authController.verifyResetToken);
 router.post(
   "/reset-password/:token",
