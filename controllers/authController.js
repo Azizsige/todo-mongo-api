@@ -211,8 +211,8 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Buat token reset password dari jwt
-    const token = generateAccessToken(user._id);
+    // Buat token reset password
+    const token = crypto.randomBytes(20).toString("hex");
     const passwordResetToken = new PasswordResetToken({
       user: user._id,
       token,
@@ -228,7 +228,7 @@ const forgotPassword = async (req, res) => {
       },
     });
 
-    const resetLink = `http://localhost:1234/reset-password/${token}`; // Ganti your-app-url dengan URL aplikasi Anda
+    const resetLink = `http://localhost:1234/verification-reset-password/${token}`; // Ganti your-app-url dengan URL aplikasi Anda
     const mailOptions = {
       from: config.EMAIL_ADDRESS,
       to: user.email,
@@ -289,10 +289,30 @@ const resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // dapatkan data msg dari array errors
+      const extractedErrors = [];
+      errors.array().map((err) => extractedErrors.push({ msg: err.msg }));
+
+      return res.status(400).json({ errors: extractedErrors });
+    }
+
     // Cari token reset password
     const passwordResetToken = await PasswordResetToken.findOne({ token });
     if (!passwordResetToken) {
       return res.status(404).json({ message: "Token not found" });
+    }
+
+    if (!password) {
+      return res.status(404).json({ message: "Password harus diisi" });
+    }
+
+    if (password == passwordResetToken.password) {
+      return res
+        .status(404)
+        .json({ message: "Password tidak boleh sama dengan password lama" });
     }
 
     // Cari user berdasarkan token reset password
@@ -306,10 +326,54 @@ const resetPassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
-    // Hapus token reset password dari database
-    await passwordResetToken.remove();
+    passwordResetToken.deleteOne();
 
-    res.status(200).json({ message: "Password reset successful" });
+    res
+      .status(200)
+      .json({ status: "true", message: "Password reset successful" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// cek token forgotPassword di database
+const verifyResetToken = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+
+    const passwordResetToken = await PasswordResetToken.findOne({ token });
+
+    const createdAt = passwordResetToken.createdAt;
+    const dateCreateAt = new Date(createdAt);
+    // ubah dateCreateAt ke menit yg normal
+    const dateCreateAtExpired = dateCreateAt.getMinutes();
+
+    const timestamp = Date.now();
+    const dateNow = new Date(timestamp);
+    const dateNowWillExpired = dateCreateAtExpired + 2;
+
+    // console.log(dateNow.getMinutes());
+    console.log(dateCreateAtExpired);
+    console.log(dateNowWillExpired);
+
+    if (!passwordResetToken) {
+      return res.status(404).json({ message: "Token not found" });
+    }
+
+    if (dateNow.getMinutes() >= dateNowWillExpired) {
+      return res
+        .status(401)
+        .json({ status: "false", message: "Token expired" });
+      // console.log("token expired");
+    }
+
+    if (passwordResetToken.isUsed === true) {
+      return res.status(401).json({ message: "Token has been used" });
+    }
+
+    passwordResetToken.isUsed = true;
+    res.status(200).json({ status: "true", message: "Token valid", createdAt });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -324,4 +388,5 @@ module.exports = {
   refreshToken,
   forgotPassword,
   resetPassword,
+  verifyResetToken,
 };

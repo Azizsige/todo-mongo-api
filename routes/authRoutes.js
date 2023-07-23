@@ -91,6 +91,26 @@ router.post(
 router.post("/logout", authController.logout);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/forgot-password", authController.forgotPassword);
-router.post("/reset-password/:token", authController.resetPassword);
+router.get("/verify-token/:token", authController.verifyResetToken);
+router.post(
+  "/reset-password/:token",
+  [
+    // Validasi field harus diisi
+
+    body("password").custom((value, { req }) => {
+      // cek jika password kosong
+      if (!value) {
+        throw new Error("Password harus diisi");
+      } else if (value.length < 6) {
+        // cek jika panjang password kurang dari 6 karakter
+        throw new Error("Password minimal 6 karakter");
+      }
+      return true;
+    }),
+
+    // Validasi konfirmasi password
+  ],
+  authController.resetPassword
+);
 
 module.exports = router;

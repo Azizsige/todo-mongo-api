@@ -1,20 +1,22 @@
 const mongoose = require("mongoose");
 
-const passwordResetTokenSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+const passwordResetTokenSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    token: {
+      type: String,
+      required: true,
+    },
+    isUsed: {
+      type: Boolean,
+      default: false,
+    },
   },
-  token: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    expires: "5min",
-  },
-});
+  { timestamps: true }
+);
 
 const PasswordResetToken = mongoose.model(
   "PasswordResetToken",
