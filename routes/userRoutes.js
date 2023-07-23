@@ -10,4 +10,16 @@ router.get(
   userController.getCurrentUserWithTodos
 );
 
+router.put(
+  "/update/:id",
+  authMiddleware.authenticateToken,
+  userController.updateUser
+);
+
+router.delete(
+  "/delete/:id",
+  authMiddleware.authenticateToken,
+  userController.deleteUser
+);
+
 module.exports = router;
