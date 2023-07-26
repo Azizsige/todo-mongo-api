@@ -2,16 +2,17 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: {
-      type: String,
-    },
-    lastName: {
+    fullName: {
       type: String,
     },
     username: {
       type: String,
       required: true,
       unique: true,
+    },
+    jenisKelamin: {
+      type: String,
+      enum: ["Laki-laki", "Perempuan"],
     },
     email: {
       required: true,

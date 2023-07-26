@@ -15,7 +15,14 @@ const PasswordResetToken = require("../models/passwordResetTokenSchema ");
 
 const register = async (req, res) => {
   try {
-    const { username, email, password, confirmPassword } = req.body;
+    const {
+      fullName,
+      username,
+      email,
+      jenisKelamin,
+      password,
+      confirmPassword,
+    } = req.body;
 
     const existingUser = await User.findOne({ username });
     const existingEmail = await User.findOne({ email });
@@ -38,8 +45,10 @@ const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
+      fullName,
       username,
       email,
+      jenisKelamin,
       password: hashedPassword,
     });
 

@@ -49,6 +49,22 @@ router.post(
       }
       return true;
     }),
+
+    body("jenisKelamin").custom((value, { req }) => {
+      if (!value) {
+        throw new Error("Jenis kelamin harus diisi");
+      } else if (value !== "Laki-laki" && value !== "Perempuan") {
+        throw new Error("Jenis kelamin harus Laki-laki atau Perempuan");
+      }
+      return true;
+    }),
+
+    body("fullName").custom((value, { req }) => {
+      if (!value) {
+        throw new Error("Nama lengkap harus diisi");
+      }
+      return true;
+    }),
   ],
   authController.register
 );
