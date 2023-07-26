@@ -238,7 +238,7 @@ const forgotPassword = async (req, res) => {
       },
     });
 
-    const resetLink = `http://localhost:1234/verification-reset-password/${token}`; // Ganti your-app-url dengan URL aplikasi Anda
+    const resetLink = `https://todo-mongo.vercel.app/verification-reset-password/${token}`; // Ganti your-app-url dengan URL aplikasi Anda
     const mailOptions = {
       from: config.EMAIL_ADDRESS,
       to: user.email,
