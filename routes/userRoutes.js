@@ -16,6 +16,13 @@ router.put(
   "/update/:id",
   [
     // Validasi field harus diisi
+    body("fullName").custom((value, { req }) => {
+      //  check if input using space or not
+      if (!value) {
+        throw new Error("Full Name harus diisi");
+      }
+      return true;
+    }),
     body("username").custom((value, { req }) => {
       //  check if input using space or not
       if (!value) {
@@ -37,13 +44,9 @@ router.put(
       }
       return true;
     }),
-    body("password").custom((value, { req }) => {
-      // cek jika password kosong
-      if (!value) {
-        throw new Error("Password harus diisi");
-      } else if (value.length < 6) {
-        // cek jika panjang password kurang dari 6 karakter
-        throw new Error("Password minimal 6 karakter");
+    body("jenisKelamin").custom((value, { req }) => {
+      if (value !== "Laki-laki" && value !== "Perempuan") {
+        throw new Error("Jenis kelamin harus Laki-laki atau Perempuan");
       }
       return true;
     }),

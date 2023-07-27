@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Todo = require("../models/Todo");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
+const e = require("express");
 
 const getCurrentUserWithTodos = async (req, res) => {
   try {
@@ -28,7 +29,7 @@ const getCurrentUserWithTodos = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { firstName, lastName, username, email, password } = req.body;
+    const { fullName, username, email, jenisKelamin } = req.body;
 
     const existingEmail = await User.findOne({ email });
     const existingUser = await User.findOne({ username });
@@ -41,26 +42,38 @@ const updateUser = async (req, res) => {
         .map((err) => extractedErrors.push({ [err.param]: err.msg }));
     }
 
-    if (existingEmail || existingUser) {
-      return res.status(400).json({
-        status: "false",
-        message: "Email atau Username sudah terdaftar",
-      });
-    }
-
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Periksa dan ubah hanya parameter yang diterima
+    if (fullName) {
+      user.fullName = fullName;
+    }
+    if (username) {
+      if (existingUser || user.username === username) {
+        user.username = username;
+      } else if (!existingUser || user.username !== username) {
+        user.username = username;
+      } else {
+        return res.status(400).json({ message: "Username sudah digunakan" });
+      }
+    }
+    if (email) {
+      if (existingEmail || user.email === email) {
+        user.email = email;
+      } else if (!existingEmail || user.email !== email) {
+        user.email = email;
+      } else {
+        return res.status(400).json({ message: "Email sudah digunakan" });
+      }
+    }
+    if (jenisKelamin) {
+      user.jenisKelamin = jenisKelamin;
+    }
 
-    user.firstName = firstName;
-    user.lastName = lastName;
-    user.username = username;
-    user.email = email;
-    user.password = hashedPassword;
-
+    // Simpan perubahan
     await user.save();
 
     res

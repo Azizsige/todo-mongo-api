@@ -52,15 +52,21 @@ const register = async (req, res) => {
       password: hashedPassword,
     });
 
-    const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
-      expiresIn: "5min",
-    });
+    // Generate access token
+    const accessToken = generateAccessToken(user._id);
+
+    // Generate refresh token
+    const refreshToken = generateRefreshToken(user._id);
+
+    // Simpan refresh token ke dalam user
+    user.refreshToken = refreshToken;
+    await user.save();
 
     res.status(201).json({
       status: "true",
       message: "Registration successful",
       user,
-      token,
+      accessToken,
     });
   } catch (error) {
     console.error(error);
