@@ -31,18 +31,27 @@ app.use("/api/todos", todoRoutes);
 app.use("/api/users", userRoutes);
 
 // Atau konfigurasi CORS dengan set header "Access-Control-Allow-Origin" secara manual
-app.use((req, res, next) => {
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://todo-mongo.vercel.app/"
-  ); // Ganti "*" dengan domain Anda jika ingin membatasi origin
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader(
+//     "Access-Control-Allow-Origin",
+//     "https://todo-mongo.vercel.app/"
+//   ); // Ganti "*" dengan domain Anda jika ingin membatasi origin
+//   res.setHeader(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept"
+//   );
+//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+//   next();
+// });
+
+app.use(
+  cors({
+    origin: "https://todo-mongo.vercel.app/",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 mongoose
   .connect(config.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
